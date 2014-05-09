@@ -6,7 +6,7 @@
   "repository": "https://github.com/izuzak/atom-pdf-view",
   "license": "MIT",
   "scripts": {
-    "postinstall": "scripts/install.sh"
+    "postinstall": "cd node_modules/pdf.js/ && node make singlefile"
   },
   "engines": {
     "atom": "*"
