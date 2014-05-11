@@ -2,6 +2,7 @@
 fs = require 'fs-plus'
 path = require 'path'
 require './../node_modules/pdf.js/build/singlefile/build/pdf.combined.js'
+{File} = require 'pathwatcher'
 
 module.exports =
 class PdfEditorView extends ScrollView
@@ -21,7 +22,16 @@ class PdfEditorView extends ScrollView
     super
 
     @filePath = path
+    @file = new File(@filePath)
+
+    @renderPdf()
+
+    @subscribe(@file, 'contents-changed', => @renderPdf())
+
+  renderPdf: ->
     pdfData = new Uint8Array(fs.readFileSync(@filePath));
+
+    $("canvas").remove()
 
     PDFJS.getDocument(pdfData).then (pdfDocument) =>
       for pdfPageNumber in [1..pdfDocument.numPages]
