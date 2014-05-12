@@ -26,7 +26,9 @@ class PdfEditorView extends ScrollView
 
     @renderPdf()
 
-    @subscribe(@file, 'contents-changed', => @renderPdf())
+    @subscribe @file, 'contents-changed', => @renderPdf()
+    @subscribe this, 'core:move-up', => @scrollUp()
+    @subscribe this, 'core:move-down', => @scrollDown()
 
   renderPdf: ->
     pdfData = new Uint8Array(fs.readFileSync(@filePath));
