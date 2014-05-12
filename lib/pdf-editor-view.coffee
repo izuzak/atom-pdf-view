@@ -33,7 +33,7 @@ class PdfEditorView extends ScrollView
   renderPdf: ->
     pdfData = new Uint8Array(fs.readFileSync(@filePath));
 
-    $("canvas").remove()
+    @container.find("canvas").remove()
 
     PDFJS.getDocument(pdfData).then (pdfDocument) =>
       for pdfPageNumber in [1..pdfDocument.numPages]
