@@ -27,6 +27,8 @@ class PdfEditorView extends ScrollView
     @renderPdf()
 
     @subscribe @file, 'contents-changed', => @renderPdf()
+    @subscribe this, 'core:move-left', => @scrollLeft(@scrollLeft() - $(window).width() / 20)
+    @subscribe this, 'core:move-right', => @scrollRight(@scrollRight() + $(window).width() / 20)
 
   renderPdf: ->
     pdfData = new Uint8Array(fs.readFileSync(@filePath))
