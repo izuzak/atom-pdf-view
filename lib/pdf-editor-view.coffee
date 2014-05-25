@@ -29,7 +29,7 @@ class PdfEditorView extends ScrollView
     @subscribe @file, 'contents-changed', => @renderPdf()
 
   renderPdf: ->
-    pdfData = new Uint8Array(fs.readFileSync(@filePath));
+    pdfData = new Uint8Array(fs.readFileSync(@filePath))
 
     @container.find("canvas").remove()
 
@@ -39,11 +39,11 @@ class PdfEditorView extends ScrollView
 
         do (canvas) ->
           pdfDocument.getPage(pdfPageNumber).then (pdfPage) ->
-            scale = 1.5;
-            viewport = pdfPage.getViewport(scale);
-            context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+            scale = 1.5
+            viewport = pdfPage.getViewport(scale)
+            context = canvas.getContext('2d')
+            canvas.height = viewport.height
+            canvas.width = viewport.width
 
             pdfPage.render({canvasContext: context, viewport: viewport})
 
