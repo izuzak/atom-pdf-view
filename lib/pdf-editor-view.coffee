@@ -21,33 +21,66 @@ class PdfEditorView extends ScrollView
   initialize: (path) ->
     super
 
+    @currentScale = 1.5
+    @defaultScale = 1.5
+    @scaleFactor = 10.0
+
     @filePath = path
     @file = new File(@filePath)
+    @canvases = []
 
-    @renderPdf()
+    @updatePdf()
 
-    @subscribe @file, 'contents-changed', => @renderPdf()
+    @subscribe @file, 'contents-changed', => @updatePdf()
     @subscribe this, 'core:move-left', => @scrollLeft(@scrollLeft() - $(window).width() / 20)
     @subscribe this, 'core:move-right', => @scrollRight(@scrollRight() + $(window).width() / 20)
 
-  renderPdf: ->
-    pdfData = new Uint8Array(fs.readFileSync(@filePath))
+    @command 'pdf-view:zoom-in', => @zoomIn()
+    @command 'pdf-view:zoom-out', => @zoomOut()
+    @command 'pdf-view:reset-zoom', => @resetZoom()
 
+  updatePdf: ->
     @container.find("canvas").remove()
+    @currentScale = @defaultScale
+    @canvases = []
 
+    pdfData = new Uint8Array(fs.readFileSync(@filePath))
     PDFJS.getDocument(pdfData).then (pdfDocument) =>
-      for pdfPageNumber in [1..pdfDocument.numPages]
+      @pdfDocument = pdfDocument
+
+      for pdfPageNumber in [1..@pdfDocument.numPages]
         canvas = $("<canvas/>", class: "page-container").appendTo(@container)[0]
+        @canvases.push(canvas)
 
-        do (canvas) ->
-          pdfDocument.getPage(pdfPageNumber).then (pdfPage) ->
-            scale = 1.5
-            viewport = pdfPage.getViewport(scale)
-            context = canvas.getContext('2d')
-            canvas.height = viewport.height
-            canvas.width = viewport.width
+      @renderPdf()
 
-            pdfPage.render({canvasContext: context, viewport: viewport})
+  renderPdf: ->
+    for pdfPageNumber in [1..@pdfDocument.numPages]
+      canvas = @canvases[pdfPageNumber-1]
+
+      do (canvas) =>
+        @pdfDocument.getPage(pdfPageNumber).then (pdfPage) =>
+          viewport = pdfPage.getViewport(@currentScale)
+          context = canvas.getContext('2d')
+          canvas.height = viewport.height
+          canvas.width = viewport.width
+
+          pdfPage.render({canvasContext: context, viewport: viewport})
+
+  zoomOut: ->
+    @adjustSize((100 - @scaleFactor) / 100)
+
+  zoomIn: ->
+    @adjustSize((100 + @scaleFactor) / 100)
+
+  resetZoom: ->
+    @adjustSize(@defaultScale / @currentScale)
+
+  adjustSize: (factor) ->
+    @currentScale = @currentScale * factor
+    @renderPdf()
+    @scrollTop(@scrollTop() * factor)
+    @scrollLeft(@scrollLeft() * factor)
 
   serialize: ->
     {@filePath, deserializer: 'PdfEditorView'}
