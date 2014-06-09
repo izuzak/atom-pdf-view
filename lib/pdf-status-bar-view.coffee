@@ -27,7 +27,7 @@ class PdfStatusBarView extends View
   updatePdfStatus: ->
     view = atom.workspaceView.getActiveView()
 
-    if view.pdfDocument
+    if view and view.pdfDocument
       @getPdfStatus(view)
     else
       @pdfStatus.hide()
