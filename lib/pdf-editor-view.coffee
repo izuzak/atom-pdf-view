@@ -35,17 +35,27 @@ class PdfEditorView extends ScrollView
     @totalPageNumber = 0
     @centersBetweenPages = []
     @pageHeights = []
+    @scrollTopBeforeUpdate = 0
+    @scrollLeftBeforeUpdate = 0
+    @updating = false
 
     @subscribe @file, 'contents-changed', => @updatePdf()
     @subscribe this, 'core:move-left', => @scrollLeft(@scrollLeft() - $(window).width() / 20)
     @subscribe this, 'core:move-right', => @scrollRight(@scrollRight() + $(window).width() / 20)
 
-    @on 'scroll', => @setCurrentPageNumber()
+    @on 'scroll', => @onScroll()
     @subscribe $(window), 'resize', => @setCurrentPageNumber()
 
     @command 'pdf-view:zoom-in', => @zoomIn()
     @command 'pdf-view:zoom-out', => @zoomOut()
     @command 'pdf-view:reset-zoom', => @resetZoom()
+
+  onScroll: ->
+    if not @updating
+      @scrollTopBeforeUpdate = @scrollTop()
+      @scrollLeftBeforeUpdate = @scrollLeft()
+
+    @setCurrentPageNumber()
 
   setCurrentPageNumber: ->
     if not @pdfDocument
@@ -65,8 +75,8 @@ class PdfEditorView extends ScrollView
     atom.workspaceView.trigger 'pdf-view:current-page-update'
 
   updatePdf: ->
+    @updating = true
     @container.find("canvas").remove()
-    @currentScale = @defaultScale
     @canvases = []
 
     pdfData = new Uint8Array(fs.readFileSync(@filePath))
@@ -98,7 +108,11 @@ class PdfEditorView extends ScrollView
           pdfPage.render({canvasContext: context, viewport: viewport})
 
           if pdfPage.pageNumber == @pdfDocument.numPages
+            @scrollTop(@scrollTopBeforeUpdate)
+            @scrollLeft(@scrollLeftBeforeUpdate)
             @setCurrentPageNumber()
+            @updating = false
+
 
   zoomOut: ->
     @adjustSize((100 - @scaleFactor) / 100)
