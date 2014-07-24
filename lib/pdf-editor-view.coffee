@@ -135,6 +135,15 @@ class PdfEditorView extends ScrollView
   getTotalPageNumber: () ->
     return @totalPageNumber
 
+  scrollToPage: (pdfPageNumber) ->
+    if not @pdfDocument or isNaN(pdfPageNumber)
+      return
+
+    pdfPageNumber = @pdfDocument.numPages unless pdfPageNumber < @pdfDocument.numPages
+    pageScrollPosition = (@pageHeights[0...(pdfPageNumber-1)].reduce ((x,y) -> x + y), 0) + (pdfPageNumber - 1) * 20
+
+    @scrollTop(pageScrollPosition)
+
   serialize: ->
     {@filePath, deserializer: 'PdfEditorView'}
 

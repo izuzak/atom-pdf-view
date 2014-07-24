@@ -19,3 +19,9 @@ Adds support for viewing PDF files in Atom. Powered by [PDF.js](https://github.c
 Shows the number of the current page and total page count.
 
 ![](https://cloud.githubusercontent.com/assets/38924/3214330/a13c58a2-efac-11e3-85a5-c75f6d654058.png)
+
+### Go to page
+
+Jump to a specific page by either clicking on the page count in the status bar or by executing the `Pdf View: Go To Page` command from the command palette.
+
+![](https://cloud.githubusercontent.com/assets/38924/3689767/ce223cce-1342-11e4-8b7b-b2e5bdbb3016.png)

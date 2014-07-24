@@ -4,7 +4,7 @@ module.exports =
 class PdfStatusBarView extends View
   @content: ->
     @div class: 'status-image inline-block', =>
-      @span class: 'pdf-status', outlet: 'pdfStatus'
+      @a href: '#', class: 'pdf-status inline-block', outlet: 'pdfStatus'
 
   initialize: (@statusBar) ->
     @attach()
@@ -14,6 +14,10 @@ class PdfStatusBarView extends View
 
     @subscribe atom.workspaceView, 'pdf-view:current-page-update', =>
       @updatePdfStatus()
+
+    @subscribe this, 'click', ->
+      atom.workspaceView.trigger('pdf-view:go-to-page')
+      false
 
   attach: ->
     @statusBar.appendLeft this
