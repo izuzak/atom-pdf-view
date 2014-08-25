@@ -90,7 +90,7 @@ class PdfEditorView extends ScrollView
 
       @renderPdf()
 
-  renderPdf: ->
+  renderPdf: (scrollAfterRender = true) ->
     @centersBetweenPages = []
     @pageHeights = []
 
@@ -103,19 +103,18 @@ class PdfEditorView extends ScrollView
           context = canvas.getContext('2d')
           canvas.height = viewport.height
           canvas.width = viewport.width
-          @pageHeights.push(viewport.height)
+          @pageHeights.push(Math.floor(viewport.height))
 
           pdfPage.render({canvasContext: context, viewport: viewport})
 
-          if pdfPage.pageNumber == @pdfDocument.numPages
+          if pdfPage.pageNumber == @pdfDocument.numPages and scrollAfterRender
             @scrollTop(@scrollTopBeforeUpdate)
             @scrollLeft(@scrollLeftBeforeUpdate)
             @setCurrentPageNumber()
             @updating = false
 
-
   zoomOut: ->
-    @adjustSize((100 - @scaleFactor) / 100)
+    @adjustSize(100 / (100 + @scaleFactor))
 
   zoomIn: ->
     @adjustSize((100 + @scaleFactor) / 100)
@@ -123,11 +122,44 @@ class PdfEditorView extends ScrollView
   resetZoom: ->
     @adjustSize(@defaultScale / @currentScale)
 
+  computeZoomedScrollTop: (oldScrollTop, oldPageHeights) ->
+    pixelsToZoom = 0
+    spacesToSkip = 0
+    zoomedPixels = 0
+
+    for pdfPageNumber in [0...@pdfDocument.numPages]
+      if pixelsToZoom + spacesToSkip + oldPageHeights[pdfPageNumber] > oldScrollTop
+        zoomFactorForPage = @pageHeights[pdfPageNumber] / oldPageHeights[pdfPageNumber]
+        partOfPageAboveUpperBorder = oldScrollTop - (pixelsToZoom + spacesToSkip)
+        zoomedPixels += Math.round(partOfPageAboveUpperBorder * zoomFactorForPage)
+        pixelsToZoom += partOfPageAboveUpperBorder
+        break
+      else
+        pixelsToZoom += oldPageHeights[pdfPageNumber]
+        zoomedPixels += @pageHeights[pdfPageNumber]
+
+      if pixelsToZoom + spacesToSkip + 20 > oldScrollTop
+        partOfPaddingAboveUpperBorder = oldScrollTop - (pixelsToZoom + spacesToSkip)
+        spacesToSkip += partOfPaddingAboveUpperBorder
+        break
+      else
+        spacesToSkip += 20
+
+    return zoomedPixels + spacesToSkip
+
   adjustSize: (factor) ->
+    oldScrollTop = @scrollTop()
+    oldPageHeights = @pageHeights.slice(0)
     @currentScale = @currentScale * factor
-    @renderPdf()
-    @scrollTop(@scrollTop() * factor)
-    @scrollLeft(@scrollLeft() * factor)
+    @renderPdf(false)
+
+    process.nextTick =>
+      newScrollTop = @computeZoomedScrollTop(oldScrollTop, oldPageHeights)
+      @scrollTop(newScrollTop)
+
+    process.nextTick =>
+      newScrollLeft = @scrollLeft() * factor
+      @scrollLeft(newScrollLeft)
 
   getCurrentPageNumber: () ->
     return @currentPageNumber
