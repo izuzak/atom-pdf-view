@@ -101,8 +101,18 @@ class PdfEditorView extends ScrollView
         @pdfDocument.getPage(pdfPageNumber).then (pdfPage) =>
           viewport = pdfPage.getViewport(@currentScale)
           context = canvas.getContext('2d')
-          canvas.height = viewport.height
-          canvas.width = viewport.width
+
+          outputScale = window.devicePixelRatio
+          canvas.height = Math.floor(viewport.height) * outputScale
+          canvas.width = Math.floor(viewport.width) * outputScale
+          
+          if outputScale isnt 1
+            context._scaleX = outputScale
+            context._scaleY = outputScale
+            context.scale outputScale, outputScale
+            canvas.style.width = Math.floor(viewport.width) + 'px';
+            canvas.style.height = Math.floor(viewport.height) + 'px';
+
           @pageHeights.push(Math.floor(viewport.height))
 
           pdfPage.render({canvasContext: context, viewport: viewport})
