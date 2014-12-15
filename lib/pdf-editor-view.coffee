@@ -6,14 +6,6 @@ require './../node_modules/pdf.js/build/singlefile/build/pdf.combined.js'
 
 module.exports =
 class PdfEditorView extends ScrollView
-  atom.deserializers.add(this)
-
-  @deserialize: ({filePath}) ->
-    if fs.isFileSync(filePath)
-      new PdfEditorView(filePath)
-    else
-      console.warn "Could not deserialize PDF editor for path '#{filePath}' because that file no longer exists"
-
   @content: ->
     @div class: 'pdf-view', tabindex: -1, =>
       @div outlet: 'container'
@@ -177,7 +169,7 @@ class PdfEditorView extends ScrollView
     @scrollTop(pageScrollPosition)
 
   serialize: ->
-    {@filePath, deserializer: 'PdfEditorView'}
+    {@filePath, deserializer: 'PdfEditorDeserializer'}
 
   getTitle: ->
     if @filePath?

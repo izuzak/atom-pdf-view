@@ -26,3 +26,13 @@ createPdfStatusView = ->
     view.attach()
   PdfGoToPageView = require  './pdf-goto-page-view.coffee'
   new PdfGoToPageView()
+
+PdfEditorDeserializer =
+  name: 'PdfEditorDeserializer'
+  deserialize: ({filePath}) ->
+    if require('fs-plus').isFileSync(filePath)
+      PdfEditorView ?= require './pdf-editor-view'
+      new PdfEditorView(filePath)
+    else
+      console.warn "Could not deserialize PDF editor for path '#{filePath}' because that file no longer exists"
+atom.deserializers.add PdfEditorDeserializer
