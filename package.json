@@ -6,7 +6,7 @@
   "repository": "https://github.com/izuzak/atom-pdf-view",
   "license": "MIT",
   "scripts": {
-    "postinstall": "cd node_modules/pdf.js/ && node make singlefile"
+    "postinstall": "cd node_modules/pdf.js/ && node make generic"
   },
   "engines": {
     "atom": "*"
@@ -14,6 +14,6 @@
   "dependencies": {
     "fs-plus": "2.x",
     "pathwatcher": "^2.0",
-    "pdf.js": "git+https://github.com/mozilla/pdf.js.git#251b2cae2c14ffc8b9f29fd4384f27776c1cd239"
+    "pdf.js": "git+https://github.com/mozilla/pdf.js.git#v1.0.907"
   }
 }

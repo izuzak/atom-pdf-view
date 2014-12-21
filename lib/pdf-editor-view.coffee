@@ -1,8 +1,10 @@
 {$, ScrollView} = require 'atom'
 fs = require 'fs-plus'
 path = require 'path'
-require './../node_modules/pdf.js/build/singlefile/build/pdf.combined.js'
+require './../node_modules/pdf.js/build/generic/build/pdf.js'
 {File} = require 'pathwatcher'
+
+PDFJS.workerSrc = "file://" + path.resolve(__dirname, "../node_modules/pdf.js/build/generic/build/pdf.worker.js")
 
 module.exports =
 class PdfEditorView extends ScrollView
