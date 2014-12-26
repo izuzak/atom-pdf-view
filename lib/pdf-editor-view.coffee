@@ -3,6 +3,7 @@ fs = require 'fs-plus'
 path = require 'path'
 require './../node_modules/pdf.js/build/generic/build/pdf.js'
 {File} = require 'pathwatcher'
+_ = require 'underscore-plus'
 
 PDFJS.workerSrc = "file://" + path.resolve(__dirname, "../node_modules/pdf.js/build/generic/build/pdf.worker.js")
 
@@ -33,7 +34,11 @@ class PdfEditorView extends ScrollView
     @scrollLeftBeforeUpdate = 0
     @updating = false
 
-    @subscribe @file, 'contents-changed', => @updatePdf()
+    @subscribe @file, 'contents-changed', 
+      _.debounce =>
+        @updatePdf() unless @updating
+      , 100
+
     @subscribe this, 'core:move-left', => @scrollLeft(@scrollLeft() - $(window).width() / 20)
     @subscribe this, 'core:move-right', => @scrollRight(@scrollRight() + $(window).width() / 20)
 
@@ -83,6 +88,7 @@ class PdfEditorView extends ScrollView
         @canvases.push(canvas)
 
       @renderPdf()
+    , => @updating = false
 
   renderPdf: (scrollAfterRender = true) ->
     @centersBetweenPages = []
@@ -99,7 +105,7 @@ class PdfEditorView extends ScrollView
           outputScale = window.devicePixelRatio
           canvas.height = Math.floor(viewport.height) * outputScale
           canvas.width = Math.floor(viewport.width) * outputScale
-          
+
           if outputScale isnt 1
             context._scaleX = outputScale
             context._scaleY = outputScale
@@ -116,6 +122,7 @@ class PdfEditorView extends ScrollView
             @scrollLeft(@scrollLeftBeforeUpdate)
             @setCurrentPageNumber()
             @updating = false
+        , => @updating = false
 
   zoomOut: ->
     @adjustSize(100 / (100 + @scaleFactor))

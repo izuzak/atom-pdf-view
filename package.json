@@ -14,6 +14,7 @@
   "dependencies": {
     "fs-plus": "2.x",
     "pathwatcher": "^2.0",
-    "pdf.js": "git+https://github.com/mozilla/pdf.js.git#v1.0.907"
+    "pdf.js": "git+https://github.com/mozilla/pdf.js.git#v1.0.907",
+    "underscore-plus": "^1.6"
   }
 }
