@@ -1,69 +1,57 @@
-{$, EditorView, View} = require 'atom'
+{$, TextEditorView, View} = require 'atom-space-pen-views'
+{Disposable, CompositeDisposable} = require 'atom'
 
 module.exports =
 class PdfGoToPageView extends View
   @content: ->
-    @div class: 'go-to-page overlay from-top mini', =>
-      @subview 'miniEditor', new EditorView(mini: true)
+    @div class: 'go-to-page', =>
+      @subview 'miniEditor', new TextEditorView(mini: true)
       @div class: 'message', outlet: 'message'
 
   detaching: false
 
   initialize: ->
-    atom.workspaceView.command 'pdf-view:go-to-page', =>
-      @toggle()
-      false
+    atom.commands.add 'atom-workspace',
+      'pdf-view:go-to-page': =>
+        @toggle()
+        false
 
-    @miniEditor.hiddenInput.on 'focusout', => @detach() unless @detaching
-    @on 'core:confirm', => @confirm()
-    @on 'core:cancel', => @detach()
+    @miniEditor.on 'blur', => @close()
+
+    atom.commands.add this.element,
+      'core:confirm': =>
+        @confirm()
+      'core:cancel': =>
+        @close()
 
     @miniEditor.preempt 'textInput', (e) =>
       false unless e.originalEvent.data.match(/[0-9]/)
 
   toggle: ->
-    if @hasParent()
-      @detach()
+    if @panel?.isVisible()
+      @close()
     else
       @attach()
 
-  detach: ->
-    return unless @hasParent()
-
-    @detaching = true
-    miniEditorFocused = @miniEditor.isFocused
+  close: ->
     @miniEditor.setText('')
-    @miniEditor.updateDisplay()
-
-    super
-
-    @restoreFocus() if miniEditorFocused
-    @detaching = false
+    @panel?.hide()
+    atom.workspace.getActivePane().activate()
 
   confirm: ->
     pageNumber = @miniEditor.getText()
     pageNumber = parseInt(pageNumber, 10)
-    pdfView = atom.workspaceView.getActiveView()
+    pdfView = atom.workspace.getActivePaneItem()
 
-    @detach()
+    @close()
 
     if pdfView and pdfView.pdfDocument and pdfView.scrollToPage
       pdfView.scrollToPage(pageNumber)
 
-  storeFocusedElement: ->
-    @previouslyFocusedElement = $(':focus')
-
-  restoreFocus: ->
-    if @previouslyFocusedElement?.isOnDom()
-      @previouslyFocusedElement.focus()
-    else
-      atom.workspaceView.focus()
-
   attach: ->
-    pdfView = atom.workspaceView.getActiveView()
+    pdfView = atom.workspace.getActivePaneItem()
 
     if pdfView and pdfView.pdfDocument and pdfView.scrollToPage
-      @storeFocusedElement()
-      atom.workspaceView.append(this)
+      @panel = atom.workspace.addModalPanel(item: this)
       @message.text("Enter a page number 1-#{pdfView.getTotalPageNumber()}")
       @miniEditor.focus()

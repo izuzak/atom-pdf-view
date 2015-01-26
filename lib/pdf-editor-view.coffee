@@ -1,9 +1,10 @@
-{$, ScrollView} = require 'atom'
+{$, ScrollView} = require 'atom-space-pen-views'
 fs = require 'fs-plus'
 path = require 'path'
 require './../node_modules/pdf.js/build/generic/build/pdf.js'
 {File} = require 'pathwatcher'
 _ = require 'underscore-plus'
+{Disposable, CompositeDisposable} = require 'atom'
 
 PDFJS.workerSrc = "file://" + path.resolve(__dirname, "../node_modules/pdf.js/build/generic/build/pdf.worker.js")
 
@@ -34,20 +35,41 @@ class PdfEditorView extends ScrollView
     @scrollLeftBeforeUpdate = 0
     @updating = false
 
-    @subscribe @file, 'contents-changed', 
+    disposables = new CompositeDisposable
+
+    onFileChangeCallback =
       _.debounce =>
         @updatePdf() unless @updating
       , 100
 
-    @subscribe this, 'core:move-left', => @scrollLeft(@scrollLeft() - $(window).width() / 20)
-    @subscribe this, 'core:move-right', => @scrollRight(@scrollRight() + $(window).width() / 20)
+    disposables.add @file.onDidChange onFileChangeCallback
 
-    @on 'scroll', => @onScroll()
-    @subscribe $(window), 'resize', => @setCurrentPageNumber()
+    moveLeftCallback = => @scrollLeft(@scrollLeft() - $(window).width() / 20)
+    moveRightCallback = => @scrollRight(@scrollRight() + $(window).width() / 20)
+    scrollCallback = => @onScroll()
+    resizeHandler = => @setCurrentPageNumber()
 
-    @command 'pdf-view:zoom-in', => @zoomIn()
-    @command 'pdf-view:zoom-out', => @zoomOut()
-    @command 'pdf-view:reset-zoom', => @resetZoom()
+    elem = this
+    elem.on 'core:move-left', moveLeftCallback
+    disposables.add new Disposable ->
+      elem.off 'core:move-left', moveLeftCallback
+
+    elem.on 'core:move-right', moveRightCallback
+    disposables.add new Disposable ->
+      elem.off 'core:move-right', moveRightCallback
+
+    elem.on 'scroll', scrollCallback
+    disposables.add new Disposable ->
+      $(window).off 'scroll', scrollCallback
+
+    $(window).on 'resize', resizeHandler
+    disposables.add new Disposable ->
+      $(window).off 'resize', resizeHandler
+
+    atom.commands.add 'atom-workspace',
+      'pdf-view:zoom-in': => @zoomIn()
+      'pdf-view:zoom-out': => @zoomOut()
+      'pdf-view:reset-zoom': => @resetZoom()
 
   onScroll: ->
     if not @updating
@@ -71,7 +93,7 @@ class PdfEditorView extends ScrollView
       if center >= @centersBetweenPages[pdfPageNumber-2] && center < @centersBetweenPages[pdfPageNumber-1]
         @currentPageNumber = pdfPageNumber
 
-    atom.workspaceView.trigger 'pdf-view:current-page-update'
+    atom.views.getView(atom.workspace).dispatchEvent(new Event('pdf-view:current-page-update'));
 
   updatePdf: ->
     @updating = true

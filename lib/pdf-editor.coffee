@@ -19,12 +19,9 @@ openUri = (uriToOpen) ->
     new PdfEditorView(uriToOpen)
 
 createPdfStatusView = ->
-  {statusBar} = atom.workspaceView
-  if statusBar?
-    PdfStatusBarView = require  './pdf-status-bar-view'
-    view = new PdfStatusBarView(statusBar)
-    view.attach()
-  PdfGoToPageView = require  './pdf-goto-page-view.coffee'
+  PdfStatusBarView = require './pdf-status-bar-view'
+  new PdfStatusBarView()
+  PdfGoToPageView = require './pdf-goto-page-view.coffee'
   new PdfGoToPageView()
 
 PdfEditorDeserializer =
