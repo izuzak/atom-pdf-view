@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "fs-plus": "2.x",
-    "pathwatcher": "^2.0",
+    "pathwatcher": "^4.0.1",
     "pdf.js": "git+https://github.com/mozilla/pdf.js.git#v1.0.907",
     "underscore-plus": "^1.6",
     "atom-space-pen-views": "^2.0.3"
