@@ -2,9 +2,8 @@
 fs = require 'fs-plus'
 path = require 'path'
 require './../node_modules/pdf.js/build/generic/build/pdf.js'
-{File} = require 'pathwatcher'
 _ = require 'underscore-plus'
-{Disposable, CompositeDisposable} = require 'atom'
+{File, Disposable, CompositeDisposable} = require 'atom'
 
 PDFJS.workerSrc = "file://" + path.resolve(__dirname, "../node_modules/pdf.js/build/generic/build/pdf.worker.js")
 
