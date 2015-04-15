@@ -49,13 +49,12 @@ class PdfEditorView extends ScrollView
     resizeHandler = => @setCurrentPageNumber()
 
     elem = this
-    elem.on 'core:move-left', moveLeftCallback
-    disposables.add new Disposable ->
-      elem.off 'core:move-left', moveLeftCallback
 
-    elem.on 'core:move-right', moveRightCallback
-    disposables.add new Disposable ->
-      elem.off 'core:move-right', moveRightCallback
+    atom.commands.add '.pdf-view',
+      'core:move-left': moveLeftCallback
+
+    atom.commands.add '.pdf-view',
+      'core:move-right': moveRightCallback
 
     elem.on 'scroll', scrollCallback
     disposables.add new Disposable ->
@@ -217,7 +216,7 @@ class PdfEditorView extends ScrollView
     else
       'untitled'
 
-  getUri: ->
+  getURI: ->
     @filePath
 
   getPath: ->
@@ -225,3 +224,9 @@ class PdfEditorView extends ScrollView
 
   destroy: ->
     @detach()
+
+  onDidChangeTitle: ->
+    return new Disposable -> null
+
+  onDidChangeModified: ->
+    return new Disposable -> null
