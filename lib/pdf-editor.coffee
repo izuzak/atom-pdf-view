@@ -4,7 +4,7 @@ PdfEditorView = null
 module.exports =
   activate: (state) ->
     @opener = atom.workspace.addOpener openUri
-    atom.packages.once('activated', createPdfStatusView)
+    atom.packages.onDidActivateInitialPackages -> createPdfStatusView()
 
   deactivate: ->
     @opener.dispose()
