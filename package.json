@@ -5,9 +5,6 @@
   "description": "Atom PDF viewer based on PDF.js",
   "repository": "https://github.com/izuzak/atom-pdf-view",
   "license": "MIT",
-  "scripts": {
-    "postinstall": "cd node_modules/pdf.js/ && node make generic"
-  },
   "engines": {
     "atom": ">=0.174.0 <2.0.0"
   },
