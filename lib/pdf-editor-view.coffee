@@ -1,11 +1,11 @@
 {$, ScrollView} = require 'atom-space-pen-views'
 fs = require 'fs-plus'
 path = require 'path'
-require './../node_modules/pdf.js/build/generic/build/pdf.js'
+require './../node_modules/pdfjs-dist/build/pdf.js'
 _ = require 'underscore-plus'
 {File, Disposable, CompositeDisposable} = require 'atom'
 
-PDFJS.workerSrc = "file://" + path.resolve(__dirname, "../node_modules/pdf.js/build/generic/build/pdf.worker.js")
+PDFJS.workerSrc = "file://" + path.resolve(__dirname, "../node_modules/pdfjs-dist/build/pdf.worker.js")
 
 module.exports =
 class PdfEditorView extends ScrollView
