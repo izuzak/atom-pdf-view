@@ -38,7 +38,10 @@ class PdfEditorView extends ScrollView
 
     onFileChangeCallback =
       _.debounce =>
-        @updatePdf() unless @updating
+        if @updating
+          @fileChanged = true
+        else
+          @updatePdf()
       , 100
 
     disposables.add @file.onDidChange onFileChangeCallback
@@ -93,8 +96,14 @@ class PdfEditorView extends ScrollView
 
     atom.views.getView(atom.workspace).dispatchEvent(new Event('pdf-view:current-page-update'));
 
+  finishUpdate: ->
+    @updating = false
+    if @fileChanged
+      @updatePdf()
+
   updatePdf: ->
     @updating = true
+    @fileChanged = false
     @container.find("canvas").remove()
     @canvases = []
 
@@ -108,7 +117,7 @@ class PdfEditorView extends ScrollView
         @canvases.push(canvas)
 
       @renderPdf()
-    , => @updating = false
+    , => @finishUpdate()
 
   renderPdf: (scrollAfterRender = true) ->
     @centersBetweenPages = []
@@ -141,8 +150,8 @@ class PdfEditorView extends ScrollView
             @scrollTop(@scrollTopBeforeUpdate)
             @scrollLeft(@scrollLeftBeforeUpdate)
             @setCurrentPageNumber()
-            @updating = false
-        , => @updating = false
+            @finishUpdate()
+        , => @finishUpdate()
 
   zoomOut: ->
     @adjustSize(100 / (100 + @scaleFactor))
