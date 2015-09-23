@@ -102,8 +102,11 @@ class PdfEditorView extends ScrollView
       @updatePdf()
 
   updatePdf: ->
-    @updating = true
     @fileChanged = false
+
+    return unless fs.existsSync(@filePath)
+
+    @updating = true
     @container.find("canvas").remove()
     @canvases = []
 
