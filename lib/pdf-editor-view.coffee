@@ -106,11 +106,15 @@ class PdfEditorView extends ScrollView
 
     return unless fs.existsSync(@filePath)
 
+    try
+      pdfData = new Uint8Array(fs.readFileSync(@filePath))
+    catch error
+      return if error.code is 'ENOENT'
+
     @updating = true
     @container.find("canvas").remove()
     @canvases = []
 
-    pdfData = new Uint8Array(fs.readFileSync(@filePath))
     PDFJS.getDocument(pdfData).then (pdfDocument) =>
       @pdfDocument = pdfDocument
       @totalPageNumber = @pdfDocument.numPages
