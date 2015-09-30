@@ -1,4 +1,5 @@
 {$, ScrollView} = require 'atom-space-pen-views'
+{Point, TextEditor} = require 'atom'
 fs = require 'fs-plus'
 path = require 'path'
 require './../node_modules/pdfjs-dist/build/pdf.js'
@@ -7,20 +8,22 @@ _ = require 'underscore-plus'
 
 PDFJS.workerSrc = "file://" + path.resolve(__dirname, "../node_modules/pdfjs-dist/build/pdf.worker.js")
 
+{exec} = require 'child_process'
+
 module.exports =
 class PdfEditorView extends ScrollView
   @content: ->
     @div class: 'pdf-view', tabindex: -1, =>
       @div outlet: 'container'
 
-  initialize: (path) ->
+  initialize: (filePath) ->
     super
 
     @currentScale = 1.5
     @defaultScale = 1.5
     @scaleFactor = 10.0
 
-    @filePath = path
+    @filePath = filePath
     @file = new File(@filePath)
     @canvases = []
 
@@ -79,6 +82,8 @@ class PdfEditorView extends ScrollView
 
     @onMouseMove = (e) =>
       if @dragging
+        @simpleClick = false
+
         @scrollTop @dragging.scrollTop - (e.screenY - @dragging.y)
         @scrollLeft @dragging.scrollLeft - (e.screenX - @dragging.x)
         e.preventDefault()
@@ -89,6 +94,7 @@ class PdfEditorView extends ScrollView
       e.preventDefault()
 
     @on 'mousedown', (e) =>
+      @simpleClick = true
       atom.workspace.paneForItem(this).activate()
       @dragging = x: e.screenX, y: e.screenY, scrollTop: @scrollTop(), scrollLeft: @scrollLeft()
       $(document).on 'mousemove', @onMouseMove
@@ -102,6 +108,44 @@ class PdfEditorView extends ScrollView
           @zoomIn()
         else if e.originalEvent.wheelDelta < 0
           @zoomOut()
+
+  onCanvasClick: (page, e) ->
+    if @simpleClick
+      e.preventDefault()
+      @pdfDocument.getPage(page).then (pdfPage) =>
+        viewport = pdfPage.getViewport(@currentScale)
+        [x,y] = viewport.convertToPdfPoint(e.offsetX, $(@canvases[page-1]).height()-e.offsetY)
+        cmd = "synctex edit -o " + page + ":" + x + ":" + y + ":" + @filePath
+        exec cmd,
+          (error, stdout, stderr) =>
+            if not error
+              attrs = {}
+              for line in stdout.split('\n')
+                m = line.match /^([a-zA-Z]*):(.*)$/
+                if m
+                  attrs[m[1]] = m[2]
+              file = attrs.Input
+              line = attrs.Line
+              if file && line
+                editor = null
+                pathToOpen = path.normalize(attrs.Input)
+                lineToOpen = +attrs.Line
+                done = false
+                for editor in atom.workspace.getTextEditors()
+                  if editor.getPath() == pathToOpen
+                    position = new Point(lineToOpen, -1)
+                    editor.scrollToBufferPosition(position, center: true)
+                    editor.setCursorBufferPosition(position)
+                    editor.moveToFirstCharacterOfLine()
+                    pane = atom.workspace.paneForItem(editor)
+                    pane.activateItem(editor)
+                    pane.activate()
+                    done = true
+                    break
+                if not done
+                  atom.workspace.open pathToOpen,
+                    initialLine: lineToOpen,
+                    initialColumn: 0
 
   onScroll: ->
     if not @updating
@@ -153,6 +197,7 @@ class PdfEditorView extends ScrollView
       for pdfPageNumber in [1..@pdfDocument.numPages]
         canvas = $("<canvas/>", class: "page-container").appendTo(@container)[0]
         @canvases.push(canvas)
+        do (pdfPageNumber) => $(canvas).on 'click', (e) => @onCanvasClick(pdfPageNumber, e)
 
       @renderPdf()
     , => @finishUpdate()
