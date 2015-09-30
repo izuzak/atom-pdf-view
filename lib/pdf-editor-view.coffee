@@ -90,6 +90,14 @@ class PdfEditorView extends ScrollView
       if @dragging
         @dragging = null
 
+    @on 'mousewheel', (e) =>
+      if e.ctrlKey
+        e.preventDefault
+        if e.originalEvent.wheelDelta > 0
+          @zoomIn()
+        else if e.originalEvent.wheelDelta < 0
+          @zoomOut()
+
   onScroll: ->
     if not @updating
       @scrollTopBeforeUpdate = @scrollTop()
