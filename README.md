@@ -14,6 +14,8 @@ Adds support for viewing PDF files in Atom. Powered by [PDF.js](https://github.c
 | Zoom out   | `cmd--` or `cmd-_` | `ctrl--` or `ctrl-_` |
 | Reset zoom | `cmd-0`            | `ctrl-0`             |
 
+You can also zoom by holding `ctrl` and using the mouse wheel.
+
 ### Status bar information
 
 Shows the number of the current page and total page count.
