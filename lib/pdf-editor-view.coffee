@@ -72,6 +72,24 @@ class PdfEditorView extends ScrollView
       'pdf-view:zoom-out': => @zoomOut()
       'pdf-view:reset-zoom': => @resetZoom()
 
+    @dragging = null
+
+    @on 'mousedown', (e) =>
+      @dragging = x: e.screenX, y: e.screenY, scrollTop: @scrollTop(), scrollLeft: @scrollLeft()
+
+    @on 'mousemove', (e) =>
+      if @dragging
+        @scrollTop @dragging.scrollTop - (e.screenY - @dragging.y)
+        @scrollLeft @dragging.scrollLeft - (e.screenX - @dragging.x)
+        e.preventDefault()
+
+    @on 'mouseup', (e) =>
+      @dragging = null
+
+    @on 'mouseleave', (e) =>
+      if @dragging
+        @dragging = null
+
   onScroll: ->
     if not @updating
       @scrollTopBeforeUpdate = @scrollTop()
