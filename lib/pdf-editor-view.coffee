@@ -86,6 +86,7 @@ class PdfEditorView extends ScrollView
       e.preventDefault()
 
     @on 'mousedown', (e) =>
+      atom.workspace.paneForItem(this).activate()
       @dragging = x: e.screenX, y: e.screenY, scrollTop: @scrollTop(), scrollLeft: @scrollLeft()
       $(document).on 'mousemove', @onMouseMove
       $(document).on 'mouseup', @onMouseUp
