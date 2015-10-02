@@ -72,6 +72,34 @@ class PdfEditorView extends ScrollView
       'pdf-view:zoom-out': => @zoomOut()
       'pdf-view:reset-zoom': => @resetZoom()
 
+    @dragging = null
+
+    @onMouseMove = (e) =>
+      if @dragging
+        @scrollTop @dragging.scrollTop - (e.screenY - @dragging.y)
+        @scrollLeft @dragging.scrollLeft - (e.screenX - @dragging.x)
+        e.preventDefault()
+    @onMouseUp = (e) =>
+      @dragging = null
+      $(document).unbind 'mousemove', @onMouseMove
+      $(document).unbind 'mouseup', @onMouseUp
+      e.preventDefault()
+
+    @on 'mousedown', (e) =>
+      atom.workspace.paneForItem(this).activate()
+      @dragging = x: e.screenX, y: e.screenY, scrollTop: @scrollTop(), scrollLeft: @scrollLeft()
+      $(document).on 'mousemove', @onMouseMove
+      $(document).on 'mouseup', @onMouseUp
+      e.preventDefault()
+
+    @on 'mousewheel', (e) =>
+      if e.ctrlKey
+        e.preventDefault
+        if e.originalEvent.wheelDelta > 0
+          @zoomIn()
+        else if e.originalEvent.wheelDelta < 0
+          @zoomOut()
+
   onScroll: ->
     if not @updating
       @scrollTopBeforeUpdate = @scrollTop()
