@@ -74,21 +74,22 @@ class PdfEditorView extends ScrollView
 
     @dragging = null
 
-    @on 'mousedown', (e) =>
-      @dragging = x: e.screenX, y: e.screenY, scrollTop: @scrollTop(), scrollLeft: @scrollLeft()
-
-    @on 'mousemove', (e) =>
+    @onMouseMove = (e) =>
       if @dragging
         @scrollTop @dragging.scrollTop - (e.screenY - @dragging.y)
         @scrollLeft @dragging.scrollLeft - (e.screenX - @dragging.x)
         e.preventDefault()
-
-    @on 'mouseup', (e) =>
+    @onMouseUp = (e) =>
       @dragging = null
+      $(document).unbind 'mousemove', @onMouseMove
+      $(document).unbind 'mouseup', @onMouseUp
+      e.preventDefault()
 
-    @on 'mouseleave', (e) =>
-      if @dragging
-        @dragging = null
+    @on 'mousedown', (e) =>
+      @dragging = x: e.screenX, y: e.screenY, scrollTop: @scrollTop(), scrollLeft: @scrollLeft()
+      $(document).on 'mousemove', @onMouseMove
+      $(document).on 'mouseup', @onMouseUp
+      e.preventDefault()
 
     @on 'mousewheel', (e) =>
       if e.ctrlKey
