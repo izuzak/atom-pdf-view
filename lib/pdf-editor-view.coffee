@@ -223,6 +223,9 @@ class PdfEditorView extends ScrollView
     return zoomedPixels + spacesToSkip
 
   adjustSize: (factor) ->
+    if not @pdfDocument
+      return
+
     oldScrollTop = @scrollTop()
     oldPageHeights = @pageHeights.slice(0)
     @currentScale = @currentScale * factor
