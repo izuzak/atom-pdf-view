@@ -8,7 +8,7 @@ _ = require 'underscore-plus'
 
 PDFJS.workerSrc = "file://" + path.resolve(__dirname, "../node_modules/pdfjs-dist/build/pdf.worker.js")
 
-{exec} = require 'child_process'
+{exec, execFile} = require 'child_process'
 
 module.exports =
 class PdfEditorView extends ScrollView
@@ -110,13 +110,13 @@ class PdfEditorView extends ScrollView
           @zoomOut()
 
   onCanvasClick: (page, e) ->
-    if @simpleClick
+    if @simpleClick and atom.config.get('pdf-view.enableSyncTeX')
       e.preventDefault()
       @pdfDocument.getPage(page).then (pdfPage) =>
         viewport = pdfPage.getViewport(@currentScale)
         [x,y] = viewport.convertToPdfPoint(e.offsetX, $(@canvases[page-1]).height()-e.offsetY)
-        cmd = "synctex edit -o " + page + ":" + x + ":" + y + ":" + @filePath
-        exec cmd,
+        
+        callback =
           (error, stdout, stderr) =>
             if not error
               attrs = {}
@@ -146,6 +146,16 @@ class PdfEditorView extends ScrollView
                   atom.workspace.open pathToOpen,
                     initialLine: lineToOpen,
                     initialColumn: 0
+
+        synctexPath = atom.config.get('pdf-view.syncTeXPath')
+        clickspec = page + ":" + x + ":" + y + ":" + @filePath
+        if synctexPath
+          execFile synctexPath, ["edit", "-o", clickspec], callback
+        else
+          cmd = "synctex edit -o " + clickspec
+          exec cmd, callback
+        
+        
 
   onScroll: ->
     if not @updating
