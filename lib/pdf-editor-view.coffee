@@ -68,9 +68,12 @@ class PdfEditorView extends ScrollView
       $(window).off 'resize', resizeHandler
 
     atom.commands.add 'atom-workspace',
-      'pdf-view:zoom-in': => @zoomIn()
-      'pdf-view:zoom-out': => @zoomOut()
-      'pdf-view:reset-zoom': => @resetZoom()
+      'pdf-view:zoom-in': =>
+        @zoomIn() if atom.workspace.getActivePaneItem() is this
+      'pdf-view:zoom-out': =>
+        @zoomOut() if atom.workspace.getActivePaneItem() is this
+      'pdf-view:reset-zoom': =>
+        @resetZoom() if atom.workspace.getActivePaneItem() is this
 
     @dragging = null
 
