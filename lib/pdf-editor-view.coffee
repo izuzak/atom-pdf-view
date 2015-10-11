@@ -133,7 +133,7 @@ class PdfEditorView extends ScrollView
                 done = false
                 for editor in atom.workspace.getTextEditors()
                   if editor.getPath() == pathToOpen
-                    position = new Point(lineToOpen, -1)
+                    position = new Point(lineToOpen-1, -1)
                     editor.scrollToBufferPosition(position, center: true)
                     editor.setCursorBufferPosition(position)
                     editor.moveToFirstCharacterOfLine()
