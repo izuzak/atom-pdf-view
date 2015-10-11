@@ -27,3 +27,10 @@ Shows the number of the current page and total page count.
 Jump to a specific page by either clicking on the page count in the status bar or by executing the `Pdf View: Go To Page` command from the command palette.
 
 ![](https://cloud.githubusercontent.com/assets/38924/3689767/ce223cce-1342-11e4-8b7b-b2e5bdbb3016.png)
+
+### SyncTeX
+
+For PDF files created by TeX using the `--synctex=1` option, a click on the PDF
+will take you to the corresponding source code. If the `synctex` command (part
+of modern TeX distributions) is in your PATH, this will work out of the box,
+otherwise you can configure the path to the `synctex` binary in the settings.
