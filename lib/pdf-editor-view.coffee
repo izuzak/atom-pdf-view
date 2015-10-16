@@ -119,7 +119,7 @@ class PdfEditorView extends ScrollView
         callback =
           (error, stdout, stderr) =>
             if not error
-              stdout = stdout.replace('\r\n', '\n')
+              stdout = stdout.replace(/\r\n/g, '\n')
               attrs = {}
               for line in stdout.split('\n')
                 m = line.match /^([a-zA-Z]*):(.*)$/
