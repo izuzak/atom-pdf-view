@@ -1,5 +1,6 @@
 {$, ScrollView} = require 'atom-space-pen-views'
 {Point, TextEditor} = require 'atom'
+{CustomStyle, TextLayerBuilder, DefaultTextLayerFactory, getOutputScale} = require './textlayerbuilder'
 fs = require 'fs-plus'
 path = require 'path'
 require './../node_modules/pdfjs-dist/build/pdf.js'
@@ -26,6 +27,7 @@ class PdfEditorView extends ScrollView
     @filePath = filePath
     @file = new File(@filePath)
     @canvases = []
+    @textLayers = []
 
     @updatePdf()
 
@@ -93,7 +95,7 @@ class PdfEditorView extends ScrollView
       $(document).unbind 'mouseup', @onMouseUp
       e.preventDefault()
 
-    @on 'mousedown', (e) =>
+    @onMousedown = (e) =>
       @simpleClick = true
       atom.workspace.paneForItem(this).activate()
       @dragging = x: e.screenX, y: e.screenY, scrollTop: @scrollTop(), scrollLeft: @scrollLeft()
@@ -109,13 +111,19 @@ class PdfEditorView extends ScrollView
         else if e.originalEvent.wheelDelta < 0
           @zoomOut()
 
+    @on 'keydown', (e) =>
+      if (e.ctrlKey or e.metaKey) and (e.keyCode is 67 or e.keyCode is 83)
+        e.preventDefault()
+        atom.clipboard.write(@getSelectedText())
+
+
   onCanvasClick: (page, e) ->
     if @simpleClick and atom.config.get('pdf-view.enableSyncTeX')
       e.preventDefault()
       @pdfDocument.getPage(page).then (pdfPage) =>
         viewport = pdfPage.getViewport(@currentScale)
         [x,y] = viewport.convertToPdfPoint(e.offsetX, $(@canvases[page-1]).height()-e.offsetY)
-        
+
         callback =
           (error, stdout, stderr) =>
             if not error
@@ -155,8 +163,8 @@ class PdfEditorView extends ScrollView
         else
           cmd = "synctex edit -o " + clickspec
           exec cmd, callback
-        
-        
+
+
 
   onScroll: ->
     if not @updating
@@ -198,17 +206,24 @@ class PdfEditorView extends ScrollView
       return if error.code is 'ENOENT'
 
     @updating = true
-    @container.find("canvas").remove()
+    @container.empty()
     @canvases = []
+    @textLayers = []
 
     PDFJS.getDocument(pdfData).then (pdfDocument) =>
       @pdfDocument = pdfDocument
       @totalPageNumber = @pdfDocument.numPages
 
       for pdfPageNumber in [1..@pdfDocument.numPages]
-        canvas = $("<canvas/>", class: "page-container").appendTo(@container)[0]
+        pageContainer = $("<div/>", class: "page-container").appendTo(@container)[0]
+        canvasContainer = $("<div/>", class: "canvas-container").appendTo(pageContainer)[0]
+        canvas = $("<canvas/>", class: "canvas-container").appendTo(canvasContainer)[0]
         @canvases.push(canvas)
-        do (pdfPageNumber) => $(canvas).on 'click', (e) => @onCanvasClick(pdfPageNumber, e)
+        do (pdfPageNumber) =>
+          $(canvas).on 'click', (e) => @onCanvasClick(pdfPageNumber, e)
+          $(canvas).on 'mousedown', @onMouseDown
+        textLayer = $("<div/>", class: "text-layer").appendTo(pageContainer)[0]
+        @textLayers.push(textLayer)
 
       @renderPdf()
     , => @finishUpdate()
@@ -218,9 +233,10 @@ class PdfEditorView extends ScrollView
     @pageHeights = []
 
     for pdfPageNumber in [1..@pdfDocument.numPages]
-      canvas = @canvases[pdfPageNumber-1]
+      do (pdfPageNumber) =>
+        canvas = @canvases[pdfPageNumber-1]
+        textLayer = @textLayers[pdfPageNumber-1]
 
-      do (canvas) =>
         @pdfDocument.getPage(pdfPageNumber).then (pdfPage) =>
           viewport = pdfPage.getViewport(@currentScale)
           context = canvas.getContext('2d')
@@ -237,6 +253,19 @@ class PdfEditorView extends ScrollView
             canvas.style.height = Math.floor(viewport.height) + 'px';
 
           @pageHeights.push(Math.floor(viewport.height))
+
+          pdfPage.getTextContent().then (content) =>
+            outputScale = getOutputScale context
+            cssScale = "scale(#{1 / outputScale.sx}, #{1 / outputScale.sy})"
+            textLayer.style.height = canvas.style.height
+            textLayer.style.width = canvas.style.width
+            @textLayers.push textLayer
+            # CustomStyle.setProp 'transform', canvas, cssScale
+            # CustomStyle.setProp 'transformOrigin', canvas, '0% 0%'
+
+            textLayerBuilder = new DefaultTextLayerFactory().createTextLayerBuilder(textLayer, pdfPageNumber - 1, viewport)
+            textLayerBuilder.setTextContent content
+            textLayerBuilder.renderLayer()
 
           pdfPage.render({canvasContext: context, viewport: viewport})
 
@@ -327,6 +356,17 @@ class PdfEditorView extends ScrollView
 
   getPath: ->
     @filePath
+
+  getSelectedText: ->
+    if window.getSelection()
+      return window.getSelection().toString()
+    else if document.getSelection()
+      return document.getSelection().toString()
+    else if document.selection and document.selection.type isnt "Control"
+      return document.selection.createRange().text
+    else
+      ""
+
 
   destroy: ->
     @detach()
