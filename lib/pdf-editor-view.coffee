@@ -114,7 +114,7 @@ class PdfEditorView extends ScrollView
     @on 'keydown', (e) =>
       if (e.ctrlKey or e.metaKey) and (e.keyCode is 67 or e.keyCode is 83)
         e.preventDefault()
-        atom.clipboard.write(@getSelectedText())
+        document.execCommand 'copy'
 
 
   onCanvasClick: (page, e) ->
@@ -255,17 +255,15 @@ class PdfEditorView extends ScrollView
           @pageHeights.push(Math.floor(viewport.height))
 
           pdfPage.getTextContent().then (content) =>
-            outputScale = getOutputScale context
-            cssScale = "scale(#{1 / outputScale.sx}, #{1 / outputScale.sy})"
+            console.log(content)
             textLayer.style.height = canvas.style.height
             textLayer.style.width = canvas.style.width
             @textLayers.push textLayer
-            # CustomStyle.setProp 'transform', canvas, cssScale
-            # CustomStyle.setProp 'transformOrigin', canvas, '0% 0%'
 
             textLayerBuilder = new DefaultTextLayerFactory().createTextLayerBuilder(textLayer, pdfPageNumber - 1, viewport)
             textLayerBuilder.setTextContent content
-            textLayerBuilder.renderLayer()
+            textLayerBuilder.render()
+
 
           pdfPage.render({canvasContext: context, viewport: viewport})
 
@@ -356,17 +354,6 @@ class PdfEditorView extends ScrollView
 
   getPath: ->
     @filePath
-
-  getSelectedText: ->
-    if window.getSelection()
-      return window.getSelection().toString()
-    else if document.getSelection()
-      return document.getSelection().toString()
-    else if document.selection and document.selection.type isnt "Control"
-      return document.selection.createRange().text
-    else
-      ""
-
 
   destroy: ->
     @detach()
