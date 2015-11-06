@@ -95,7 +95,10 @@ class PdfEditorView extends ScrollView
       $(document).unbind 'mouseup', @onMouseUp
       e.preventDefault()
 
-    @onMousedown = (e) =>
+    @on 'mousedown', (e) =>
+      return unless document.elementFromPoint(e.clientX, e.clientY).classList.contains('text-layer')
+      document.getSelection().empty();
+
       @simpleClick = true
       atom.workspace.paneForItem(this).activate()
       @dragging = x: e.screenX, y: e.screenY, scrollTop: @scrollTop(), scrollLeft: @scrollLeft()
@@ -221,7 +224,6 @@ class PdfEditorView extends ScrollView
         @canvases.push(canvas)
         do (pdfPageNumber) =>
           $(canvas).on 'click', (e) => @onCanvasClick(pdfPageNumber, e)
-          $(canvas).on 'mousedown', @onMouseDown
         textLayer = $("<div/>", class: "text-layer").appendTo(pageContainer)[0]
         @textLayers.push(textLayer)
 
@@ -255,7 +257,6 @@ class PdfEditorView extends ScrollView
           @pageHeights.push(Math.floor(viewport.height))
 
           pdfPage.getTextContent().then (content) =>
-            console.log(content)
             textLayer.style.height = canvas.style.height
             textLayer.style.width = canvas.style.width
             @textLayers.push textLayer
