@@ -117,7 +117,7 @@ class PdfEditorView extends ScrollView
     @on 'keydown', (e) =>
       if (e.ctrlKey or e.metaKey) and (e.keyCode is 67 or e.keyCode is 83)
         e.preventDefault()
-        document.execCommand 'copy'
+        atom.clipboard.write(@select())
 
 
   onCanvasClick: (page, e) ->
@@ -355,6 +355,26 @@ class PdfEditorView extends ScrollView
 
   getPath: ->
     @filePath
+
+  select: ->
+    selection = document.getSelection()
+    return unless selection.rangeCount
+    if selection.anchorNode.isEqualNode(selection.extentNode)
+      return selection.toString()
+    else
+      nodes = selection.getRangeAt(0).cloneContents().children
+      ranges = {}
+      for idx in [0..nodes.length - 1]
+        ranges[nodes[idx].style.top] = idx
+      idx = 0
+      retval = ''
+      while idx < nodes.length
+        end = ranges[nodes[idx].style.top]
+        for nodeIdx in [idx..end]
+          retval += nodes[nodeIdx].innerText
+        retval += '\n' if idx isnt nodes.length - 1
+        idx = end + 1
+      retval
 
   destroy: ->
     @detach()
