@@ -372,7 +372,8 @@ class PdfEditorView extends ScrollView
         end = ranges[nodes[idx].style.top]
         for nodeIdx in [idx..end]
           retval += nodes[nodeIdx].innerText
-        retval += '\n' if idx isnt nodes.length - 1
+        if idx isnt nodes.length - 1
+          retval += if process.platform is 'win32' then '\r\n' else '\n'
         idx = end + 1
       retval
 
