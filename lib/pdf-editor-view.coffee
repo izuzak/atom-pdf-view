@@ -117,7 +117,8 @@ class PdfEditorView extends ScrollView
     @on 'keydown', (e) =>
       if (e.ctrlKey or e.metaKey) and (e.keyCode is 67 or e.keyCode is 83)
         e.preventDefault()
-        atom.clipboard.write(@select())
+        # atom.clipboard.write(@select())
+        document.execCommand 'copy'
 
 
   onCanvasClick: (page, e) ->
@@ -220,7 +221,7 @@ class PdfEditorView extends ScrollView
       for pdfPageNumber in [1..@pdfDocument.numPages]
         pageContainer = $("<div/>", class: "page-container").appendTo(@container)[0]
         canvasContainer = $("<div/>", class: "canvas-container").appendTo(pageContainer)[0]
-        canvas = $("<canvas/>", class: "canvas-container").appendTo(canvasContainer)[0]
+        canvas = $("<canvas/>").appendTo(canvasContainer)[0]
         @canvases.push(canvas)
         do (pdfPageNumber) =>
           $(canvas).on 'click', (e) => @onCanvasClick(pdfPageNumber, e)
@@ -255,24 +256,23 @@ class PdfEditorView extends ScrollView
             canvas.style.height = Math.floor(viewport.height) + 'px';
 
           @pageHeights.push(Math.floor(viewport.height))
+          pdfPage.render({canvasContext: context, viewport: viewport}).promise.then =>
+            pdfPage.getTextContent().then (content) =>
+              @textLayerUpdating = true
+              while textLayer.firstChild
+                textLayer.removeChild(textLayer.firstChild)
+              textLayer.style.height = canvas.style.height
+              textLayer.style.width = canvas.style.width
 
-          pdfPage.getTextContent().then (content) =>
-            textLayer.style.height = canvas.style.height
-            textLayer.style.width = canvas.style.width
-            @textLayers.push textLayer
+              textLayerBuilder = new DefaultTextLayerFactory().createTextLayerBuilder(textLayer, pdfPageNumber - 1, viewport)
+              textLayerBuilder.setTextContent content
+              textLayerBuilder.render()
 
-            textLayerBuilder = new DefaultTextLayerFactory().createTextLayerBuilder(textLayer, pdfPageNumber - 1, viewport)
-            textLayerBuilder.setTextContent content
-            textLayerBuilder.render()
-
-
-          pdfPage.render({canvasContext: context, viewport: viewport})
-
-          if pdfPage.pageNumber == @pdfDocument.numPages and scrollAfterRender
-            @scrollTop(@scrollTopBeforeUpdate)
-            @scrollLeft(@scrollLeftBeforeUpdate)
-            @setCurrentPageNumber()
-            @finishUpdate()
+              if pdfPage.pageNumber == @pdfDocument.numPages and scrollAfterRender
+                @scrollTop(@scrollTopBeforeUpdate)
+                @scrollLeft(@scrollLeftBeforeUpdate)
+                @setCurrentPageNumber()
+                @finishUpdate()
         , => @finishUpdate()
 
   zoomOut: ->
