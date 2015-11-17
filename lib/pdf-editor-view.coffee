@@ -115,7 +115,7 @@ class PdfEditorView extends ScrollView
       @pdfDocument.getPage(page).then (pdfPage) =>
         viewport = pdfPage.getViewport(@currentScale)
         [x,y] = viewport.convertToPdfPoint(e.offsetX, $(@canvases[page-1]).height()-e.offsetY)
-        
+
         callback =
           (error, stdout, stderr) =>
             if not error
@@ -149,14 +149,16 @@ class PdfEditorView extends ScrollView
                     initialColumn: 0
 
         synctexPath = atom.config.get('pdf-view.syncTeXPath')
-        clickspec = page + ":" + x + ":" + y + ":" + @filePath
+        clickspec = page + ":" + x + ":" + y + ":"
         if synctexPath
+          clickspec += @filename
           execFile synctexPath, ["edit", "-o", clickspec], callback
         else
+          clickspec += if @filename.includes(' ') then '"' + @filePath + '"' else @filePath
           cmd = "synctex edit -o " + clickspec
           exec cmd, callback
-        
-        
+
+
 
   onScroll: ->
     if not @updating
