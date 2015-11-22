@@ -151,10 +151,10 @@ class PdfEditorView extends ScrollView
         synctexPath = atom.config.get('pdf-view.syncTeXPath')
         clickspec = page + ":" + x + ":" + y + ":"
         if synctexPath
-          clickspec += @filename
+          clickspec += @filePath
           execFile synctexPath, ["edit", "-o", clickspec], callback
         else
-          clickspec += if @filename.includes(' ') then '"' + @filePath + '"' else @filePath
+          clickspec += if @filePath.includes(' ') then '"' + @filePath + '"' else @filePath
           cmd = "synctex edit -o " + clickspec
           exec cmd, callback
 
