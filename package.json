@@ -1,7 +1,7 @@
 {
   "name": "pdf-view",
   "main": "./lib/pdf-editor.coffee",
-  "version": "0.35.0",
+  "version": "0.36.0",
   "description": "Atom PDF viewer based on PDF.js",
   "repository": "https://github.com/izuzak/atom-pdf-view",
   "license": "MIT",
