@@ -8,12 +8,70 @@
   overflow: auto;
 
   .page-container {
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
+    position: relative;
 
     &:not(:last-child) {
       margin-bottom: 20px;
     }
+
+    .canvas-container, .text-layer, canvas {
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+    }
+
+    .text-layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      opacity: 0.2;
+
+      .highlight {
+        margin: -1px;
+        padding: 1px;
+
+        background-color: rgb(180, 0, 170);
+        border-radius: 4px;
+
+        .begin {
+          border-radius: 4px 0px 0px 4px;
+        }
+
+        .end {
+          border-radius: 0px 4px 4px 0px;
+        }
+
+        .middle {
+          border-radius: 0px;
+        }
+
+        .selected {
+          background-color: rgb(0, 100, 0);
+        }
+      }
+
+      div {
+        color: transparent;
+        position: absolute;
+        white-space: pre;
+        cursor: text;
+        -webkit-transform-origin: 0% 0%;
+        -moz-transform-origin: 0% 0%;
+        -o-transform-origin: 0% 0%;
+        -ms-transform-origin: 0% 0%;
+        transform-origin: 0% 0%;
+      }
+    }
   }
+}
+
+::selection {
+  background: rgb(0,0,255);
+}
+
+::-moz-selection {
+  background: rgb(0,0,255);
 }

@@ -9,9 +9,9 @@
     "atom": ">=0.174.0 <2.0.0"
   },
   "dependencies": {
+    "atom-space-pen-views": "^2.0.3",
     "fs-plus": "2.x",
     "pdfjs-dist": "1.1.469",
-    "underscore-plus": "^1.6",
-    "atom-space-pen-views": "^2.0.3"
+    "underscore-plus": "^1.6"
   }
 }

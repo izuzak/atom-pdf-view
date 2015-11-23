@@ -1,5 +1,6 @@
 {$, ScrollView} = require 'atom-space-pen-views'
 {Point, TextEditor} = require 'atom'
+{CustomStyle, TextLayerBuilder, DefaultTextLayerFactory, getOutputScale} = require './textlayerbuilder'
 fs = require 'fs-plus'
 path = require 'path'
 require './../node_modules/pdfjs-dist/build/pdf.js'
@@ -26,6 +27,7 @@ class PdfEditorView extends ScrollView
     @filePath = filePath
     @file = new File(@filePath)
     @canvases = []
+    @textLayers = []
 
     @updatePdf()
 
@@ -94,6 +96,9 @@ class PdfEditorView extends ScrollView
       e.preventDefault()
 
     @on 'mousedown', (e) =>
+      return unless document.elementFromPoint(e.clientX, e.clientY).classList.contains('text-layer')
+      document.getSelection().empty();
+
       @simpleClick = true
       atom.workspace.paneForItem(this).activate()
       @dragging = x: e.screenX, y: e.screenY, scrollTop: @scrollTop(), scrollLeft: @scrollLeft()
@@ -108,6 +113,13 @@ class PdfEditorView extends ScrollView
           @zoomIn()
         else if e.originalEvent.wheelDelta < 0
           @zoomOut()
+
+    @on 'keydown', (e) =>
+      if (e.ctrlKey or e.metaKey) and (e.keyCode is 67 or e.keyCode is 83)
+        e.preventDefault()
+        # atom.clipboard.write(@select())
+        document.execCommand 'copy'
+
 
   onCanvasClick: (page, e) ->
     if @simpleClick and atom.config.get('pdf-view.enableSyncTeX')
@@ -198,17 +210,23 @@ class PdfEditorView extends ScrollView
       return if error.code is 'ENOENT'
 
     @updating = true
-    @container.find("canvas").remove()
+    @container.empty()
     @canvases = []
+    @textLayers = []
 
     PDFJS.getDocument(pdfData).then (pdfDocument) =>
       @pdfDocument = pdfDocument
       @totalPageNumber = @pdfDocument.numPages
 
       for pdfPageNumber in [1..@pdfDocument.numPages]
-        canvas = $("<canvas/>", class: "page-container").appendTo(@container)[0]
+        pageContainer = $("<div/>", class: "page-container").appendTo(@container)[0]
+        canvasContainer = $("<div/>", class: "canvas-container").appendTo(pageContainer)[0]
+        canvas = $("<canvas/>").appendTo(canvasContainer)[0]
         @canvases.push(canvas)
-        do (pdfPageNumber) => $(canvas).on 'click', (e) => @onCanvasClick(pdfPageNumber, e)
+        do (pdfPageNumber) =>
+          $(canvas).on 'click', (e) => @onCanvasClick(pdfPageNumber, e)
+        textLayer = $("<div/>", class: "text-layer").appendTo(pageContainer)[0]
+        @textLayers.push(textLayer)
 
       @renderPdf()
     , => @finishUpdate()
@@ -218,9 +236,10 @@ class PdfEditorView extends ScrollView
     @pageHeights = []
 
     for pdfPageNumber in [1..@pdfDocument.numPages]
-      canvas = @canvases[pdfPageNumber-1]
+      do (pdfPageNumber) =>
+        canvas = @canvases[pdfPageNumber-1]
+        textLayer = @textLayers[pdfPageNumber-1]
 
-      do (canvas) =>
         @pdfDocument.getPage(pdfPageNumber).then (pdfPage) =>
           viewport = pdfPage.getViewport(@currentScale)
           context = canvas.getContext('2d')
@@ -237,14 +256,23 @@ class PdfEditorView extends ScrollView
             canvas.style.height = Math.floor(viewport.height) + 'px';
 
           @pageHeights.push(Math.floor(viewport.height))
+          pdfPage.render({canvasContext: context, viewport: viewport}).promise.then =>
+            pdfPage.getTextContent().then (content) =>
+              @textLayerUpdating = true
+              while textLayer.firstChild
+                textLayer.removeChild(textLayer.firstChild)
+              textLayer.style.height = canvas.style.height
+              textLayer.style.width = canvas.style.width
 
-          pdfPage.render({canvasContext: context, viewport: viewport})
+              textLayerBuilder = new DefaultTextLayerFactory().createTextLayerBuilder(textLayer, pdfPageNumber - 1, viewport)
+              textLayerBuilder.setTextContent content
+              textLayerBuilder.render()
 
-          if pdfPage.pageNumber == @pdfDocument.numPages and scrollAfterRender
-            @scrollTop(@scrollTopBeforeUpdate)
-            @scrollLeft(@scrollLeftBeforeUpdate)
-            @setCurrentPageNumber()
-            @finishUpdate()
+              if pdfPage.pageNumber == @pdfDocument.numPages and scrollAfterRender
+                @scrollTop(@scrollTopBeforeUpdate)
+                @scrollLeft(@scrollLeftBeforeUpdate)
+                @setCurrentPageNumber()
+                @finishUpdate()
         , => @finishUpdate()
 
   zoomOut: ->
@@ -327,6 +355,27 @@ class PdfEditorView extends ScrollView
 
   getPath: ->
     @filePath
+
+  select: ->
+    selection = document.getSelection()
+    return unless selection.rangeCount
+    if selection.anchorNode.isEqualNode(selection.extentNode)
+      return selection.toString()
+    else
+      nodes = selection.getRangeAt(0).cloneContents().children
+      ranges = {}
+      for idx in [0..nodes.length - 1]
+        ranges[nodes[idx].style.top] = idx
+      idx = 0
+      retval = ''
+      while idx < nodes.length
+        end = ranges[nodes[idx].style.top]
+        for nodeIdx in [idx..end]
+          retval += nodes[nodeIdx].innerText
+        if idx isnt nodes.length - 1
+          retval += if process.platform is 'win32' then '\r\n' else '\n'
+        idx = end + 1
+      retval
 
   destroy: ->
     @detach()
