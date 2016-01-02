@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "fs-plus": "2.x",
-    "pdfjs-dist": "1.1.469",
+    "pdfjs-dist": "1.3.146",
+    "loophole": "1.1.0",
+    "node-ensure": "0.0.0",
     "underscore-plus": "^1.6",
     "atom-space-pen-views": "^2.0.3"
   }
