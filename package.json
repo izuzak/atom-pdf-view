@@ -1,6 +1,9 @@
 {
   "name": "pdf-view",
   "main": "./lib/pdf-editor.js",
+  "deserializers": {
+    "PdfEditorDeserializer": "./lib/pdf-editor-deserializer.js"
+  },
   "version": "0.39.0",
   "description": "Atom PDF viewer based on PDF.js",
   "repository": "https://github.com/izuzak/atom-pdf-view",
