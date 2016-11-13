@@ -1,6 +1,8 @@
 {
   ".pdf-view": {
-    "ctrl-g": "pdf-view:go-to-page"
+    "ctrl-g": "pdf-view:go-to-page",
+    "cmd-left": "pdf-view:go-to-previous-page",
+    "cmd-right": "pdf-view:go-to-next-page"
   },
 
   ".platform-darwin .pdf-view": {
