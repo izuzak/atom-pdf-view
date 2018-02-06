@@ -18,5 +18,9 @@
     "node-ensure": "0.0.0",
     "underscore-plus": "^1.6",
     "atom-space-pen-views": "^2.0.3"
+  },
+  "uriHandler": {
+    "method": "handleURI",
+    "deferActivation": false
   }
 }
