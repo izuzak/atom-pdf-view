@@ -1,7 +1,7 @@
 {
   "name": "pdf-view",
   "main": "./lib/pdf-editor.js",
-  "version": "0.65.0",
+  "version": "0.66.0",
   "deserializers": {
     "PdfEditorDeserializer": "deserialize"
   },
