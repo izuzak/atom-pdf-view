@@ -10,7 +10,8 @@
     "cmd-=": "pdf-view:zoom-in",
     "cmd--": "pdf-view:zoom-out",
     "cmd-_": "pdf-view:zoom-out",
-    "cmd-0": "pdf-view:reset-zoom"
+    "cmd-0": "pdf-view:reset-zoom",
+    "alt-cmd-=": "pdf-view:zoom-fit",
   },
 
   ".platform-win32 .pdf-view, .platform-linux .pdf-view": {
