@@ -6,15 +6,16 @@
   },
 
   ".platform-darwin .pdf-view": {
+    "alt-cmd-=": "pdf-view:zoom-fit",
     "cmd-+": "pdf-view:zoom-in",
     "cmd-=": "pdf-view:zoom-in",
     "cmd--": "pdf-view:zoom-out",
     "cmd-_": "pdf-view:zoom-out",
-    "cmd-0": "pdf-view:reset-zoom",
-    "alt-cmd-=": "pdf-view:zoom-fit",
+    "cmd-0": "pdf-view:reset-zoom"
   },
 
   ".platform-win32 .pdf-view, .platform-linux .pdf-view": {
+    "alt-ctrl-=": "pdf-view:zoom-fit",
     "ctrl-+": "pdf-view:zoom-in",
     "ctrl-=": "pdf-view:zoom-in",
     "ctrl--": "pdf-view:zoom-out",
