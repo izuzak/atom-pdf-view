@@ -6,7 +6,7 @@
   },
 
   ".platform-darwin .pdf-view": {
-    "alt-cmd-=": "pdf-view:zoom-fit",
+    "alt-cmd-9": "pdf-view:zoom-fit",
     "cmd-+": "pdf-view:zoom-in",
     "cmd-=": "pdf-view:zoom-in",
     "cmd--": "pdf-view:zoom-out",
@@ -15,7 +15,7 @@
   },
 
   ".platform-win32 .pdf-view, .platform-linux .pdf-view": {
-    "alt-ctrl-=": "pdf-view:zoom-fit",
+    "alt-ctrl-9": "pdf-view:zoom-fit",
     "ctrl-+": "pdf-view:zoom-in",
     "ctrl-=": "pdf-view:zoom-in",
     "ctrl--": "pdf-view:zoom-out",
