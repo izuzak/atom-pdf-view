@@ -22,5 +22,54 @@
   "uriHandler": {
     "method": "handleURI",
     "deferActivation": false
+  },
+  "configSchema": {
+    "reverseSyncBehaviour": {
+      "type": "string",
+      "enum": ["Disabled", "Click", "Double click"],
+      "default": "Click",
+      "title": "SyncTeX Reverse sync behaviour",
+      "description": "Specify the action on the PDF generated with the `--synctex=1` option that takes you to the source."
+    },
+    "syncTeXPath": {
+      "type": "string",
+      "default": "",
+      "title": "Path to synctex binary",
+      "description": "If not specified, look for `synctex` in `PATH`."
+    },
+    "fitToWidthOnOpen": {
+      "type": "boolean",
+      "default": false,
+      "title": "Fit to width on open",
+      "description": "When opening a document, fit it to the pane width."
+    },
+    "paneToUseInSynctex": {
+      "type": "string",
+      "enum" : ["default", "left", "right", "up", "down"],
+      "default": "default",
+      "title": "Pane to use when opening new TeX files",
+      "description": "When using reverse sync and a new TeX source file has to be opened, use the provided pane to open the new file. 'default' will use the pane of the PDF viewer."
+    },
+    "autoReloadOnUpdate": {
+      "type": "boolean",
+      "default": true,
+      "title": "Auto-reload on update",
+      "description": "Automatically reload when the file is updated."
+    },
+    "nightMode": {
+      "type": "boolean",
+      "default": false,
+      "title": "Night Mode",
+      "description": "Inverts the colours of the PDF."
+    },
+    "fileExtensions": {
+      "type": "array",
+      "default": ["pdf", "ai"],
+      "title": "PDF file extensions",
+      "description": "Files with these extensions will be opened as PDFs.",
+      "items": {
+        "type": "string"
+      }
+    }
   }
 }
