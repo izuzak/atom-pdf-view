@@ -1,0 +1,5 @@
+'context-menu':
+  '.pdf-view': [
+    'label': 'Toggle Binary View'
+    'command': 'pdf-view:toggle-binary-view'
+  ]
