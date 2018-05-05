@@ -1,7 +1,7 @@
 {
   "name": "pdf-view",
   "main": "./lib/pdf-editor.js",
-  "version": "0.69.0",
+  "version": "0.70.0",
   "deserializers": {
     "PdfEditorDeserializer": "deserialize"
   },
@@ -26,7 +26,11 @@
   "configSchema": {
     "reverseSyncBehaviour": {
       "type": "string",
-      "enum": ["Disabled", "Click", "Double click"],
+      "enum": [
+        "Disabled",
+        "Click",
+        "Double click"
+      ],
       "default": "Click",
       "title": "SyncTeX Reverse sync behaviour",
       "description": "Specify the action on the PDF generated with the `--synctex=1` option that takes you to the source."
@@ -45,7 +49,13 @@
     },
     "paneToUseInSynctex": {
       "type": "string",
-      "enum" : ["default", "left", "right", "up", "down"],
+      "enum": [
+        "default",
+        "left",
+        "right",
+        "up",
+        "down"
+      ],
       "default": "default",
       "title": "Pane to use when opening new TeX files",
       "description": "When using reverse sync and a new TeX source file has to be opened, use the provided pane to open the new file. 'default' will use the pane of the PDF viewer."
@@ -64,7 +74,10 @@
     },
     "fileExtensions": {
       "type": "array",
-      "default": ["pdf", "ai"],
+      "default": [
+        "pdf",
+        "ai"
+      ],
       "title": "PDF file extensions",
       "description": "Files with these extensions will be opened as PDFs.",
       "items": {
