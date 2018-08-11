@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "fs-plus": "2.x",
-    "pdfjs-dist": "1.8.349",
+    "pdfjs-dist": "^1.9.426",
     "loophole": "1.1.0",
     "node-ensure": "0.0.0",
     "underscore-plus": "^1.6",
